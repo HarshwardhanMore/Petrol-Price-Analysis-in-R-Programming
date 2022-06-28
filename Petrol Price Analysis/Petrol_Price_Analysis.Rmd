@@ -1,0 +1,654 @@
+PETROL PRICE ANALYSIS
+
+
+
+Importing Libraries
+```{r}
+library(ggplot2)
+library(dplyr)
+library(caTools)
+library(reshape2)
+library(viridis)
+```
+
+
+
+
+
+
+
+
+
+Dataset having actual price distribution
+
+```{r}
+# Actual Petrol Price Distribution
+
+
+base_price <- 29.7
+state_tax <- 26.9
+central_tax <- 33
+dealer_commission <- 3.69
+
+final_price <- base_price+state_tax+central_tax+dealer_commission
+
+print(final_price)
+
+base_price_perc = (base_price*100)/final_price
+state_tax_perc = (state_tax*100)/final_price
+central_tax_perc = (central_tax*100)/final_price
+dealer_commission_perc = (dealer_commission*100)/final_price
+
+price_distribution <- data.frame(
+  price_dist = c(
+    "base_price_perc",
+    "state_tax_perc",
+    "central_tax_perc",
+    "dealer_commission_perc"
+  ),
+  
+  price_dist_perc = c(
+    base_price_perc,
+    state_tax_perc,
+    central_tax_perc,
+    dealer_commission_perc
+  )
+)
+
+print(price_distribution)
+```
+
+
+```{r}
+
+# Basic piechart
+ggplot(price_distribution, aes(x="", y=price_dist_perc, fill=price_dist)) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0) + 
+  labs(title="Petrol Price Contribution")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Dataset having opening to closing prices
+
+
+```{r}
+dataset <- read.csv("./dataset_openingtoclosingprices.csv")
+print(head(dataset))
+```
+
+
+
+
+```{r}
+a <- strsplit(dataset$Month.Year,"-")
+
+Month <- c()
+Year <- c()
+
+for (i in a) {
+  Month = append(Month,i[1])
+  Year = append(Year,i[2])
+}
+
+dataset <- data.frame(Month,Year,dataset[c("Opening","Closing","Lowest","Highest")])
+
+print(dataset)
+
+```
+
+```{r}
+
+Average = (dataset$Highest + dataset$Lowest)/2
+
+dataset["Average"] = Average
+
+print(dataset)
+
+```
+
+
+
+```{r}
+print(paste("Total Rows : ",nrow(dataset)))
+print(paste("Total Columns : ",ncol(dataset)))
+print(paste("Size of dataframe : ", nrow(dataset), "x", ncol(dataset)))
+```
+
+
+
+Statistical data about data
+
+```{r}
+print(summary(dataset))
+```
+
+
+```{r}
+
+print(paste("Minimum value of Opening : ",min(dataset$Opening)))
+print(paste("Maximum value of Opening : ",max(dataset$Closing)))
+
+print(paste("Minimum value of Closing : ",min(dataset$Closing)))
+print(paste("Maximum value of Closing : ",max(dataset$Closing)))
+
+```
+
+
+
+
+```{r}
+
+year_18<-filter(dataset,Year=="18")
+print(year_18)
+
+year_19<-filter(dataset,Year=="19")
+print(year_19)
+
+year_20<-filter(dataset,Year=="20")
+print(year_20)
+```
+
+
+```{r}
+
+print(paste("Size of dataframe : ", nrow(year_18), "x", ncol(year_18)))
+print(paste("Size of dataframe : ", nrow(year_19), "x", ncol(year_19)))
+print(paste("Size of dataframe : ", nrow(year_20), "x", ncol(year_20)))
+
+```
+
+
+
+```{r}
+
+print(paste("Minimum value of year_18 : ",min(year_18$Opening)))
+print(paste("Maximum value of year_18 : ",max(year_18$Closing)))
+
+print(paste("Minimum value of year_19 : ",min(year_19$Opening)))
+print(paste("Maximum value of year_19 : ",max(year_19$Closing)))
+
+print(paste("Minimum value of year_20 : ",min(year_20$Opening)))
+print(paste("Maximum value of year_20 : ",max(year_20$Closing)))
+
+```
+
+
+```{r}
+
+yr_list = c(18,19,20)
+mean_opening = c(mean(year_18$Opening),mean(year_19$Opening),mean(year_20$Opening))
+mean_closing = c(mean(year_18$Closing),mean(year_19$Closing),mean(year_20$Closing))
+mean_highest = c(mean(year_18$Highest),mean(year_19$Highest),mean(year_20$Highest))
+mean_lowest = c(mean(year_18$Lowest),mean(year_19$Lowest),mean(year_20$Lowest))
+
+mean_dataset = data.frame(yr_list,mean_opening,mean_closing,mean_highest,mean_lowest)
+print(mean_dataset)
+
+
+```
+
+```{r}
+ggplot(mean_dataset, aes(x = yr_list)) +
+  
+  geom_line(aes(y = mean_opening,)) +
+  geom_point(aes(y = mean_opening)) +
+  
+  labs(title="Mean Opening According To Year")
+```
+
+
+```{r}
+
+yr_list = c(18,19,20)
+median_opening = c(median(year_18$Opening),median(year_19$Opening),median(year_20$Opening))
+median_closing = c(median(year_18$Closing),median(year_19$Closing),median(year_20$Closing))
+median_highest = c(median(year_18$Highest),median(year_19$Highest),median(year_20$Highest))
+median_lowest = c(median(year_18$Lowest),median(year_19$Lowest),median(year_20$Lowest))
+
+median_dataset = data.frame(yr_list,median_opening,median_closing,median_highest,median_lowest)
+print(median_dataset)
+
+
+```
+
+```{r}
+ggplot(median_dataset, aes(x = yr_list)) +
+  geom_line(aes(y = median_opening)) +
+  geom_point(aes(y = median_opening)) +
+  labs(title="Average Prices of Petrol According to Months of Year 2018 | 2019 | 2020")
+```
+
+
+```{r}
+ggplot(dataset, aes(Month, Average, fill = Year)) +
+  geom_bar(stat="identity", position = "dodge") +
+  labs(title="Average Prices of Petrol According to Months of Year 2018 | 2019 | 2020")
+```
+
+
+```{r}
+ggplot(year_18, aes(Month, Average, fill = Average)) +
+  geom_bar(stat="identity", position = "dodge") +
+  labs(title="Average Prices of Petrol According to Months of Year 2018 ")
+```
+
+```{r}
+ggplot(year_19, aes(Month, Average, fill = Average)) +
+  geom_bar(stat="identity", position = "dodge") +
+  labs(title="Average Prices of Petrol According to Months of Year 2019 ")
+```
+
+```{r}
+ggplot(year_20, aes(Month, Average, fill = Average)) +
+  geom_bar(stat="identity", position = "dodge") +
+  labs(title="Average Prices of Petrol According to Months of Year 2020 ")
+```
+
+```{r}
+print(dataset[abs(data.frame(dataset["Opening"]) - data.frame(dataset["Closing"])) <= 3])
+```
+
+
+```{r}
+
+a <- dataset$Opening
+b <- dataset$Closing
+differance_betn_opening_closing <- abs(a-b)
+differance_betn_opening_closing
+
+dataset["differance_betn_opening_closing"] = differance_betn_opening_closing
+dataset
+```
+
+ 
+```{r}
+
+cor_dataset <- cor(dataset[c("Opening","Closing","Lowest","Highest","Average")])
+
+print(cor_dataset)
+
+```
+
+```{r}
+
+ 
+data<-cor(dataset[c("Opening","Closing","Lowest","Highest","Average")])
+ 
+data1<-melt(data)
+ 
+ggplot(data1,aes(x = Var1, y = Var2,fill = value))+
+geom_tile() + scale_fill_distiller(palette = "Spectral") +
+labs(title="Correlation",x="",y="")
+#+  geom_text(aes(label = value))
+```
+
+
+```{r}
+
+sample <- sample.split(dataset$Opening, SplitRatio = 0.7)
+train  <- subset(dataset, sample == TRUE)
+test   <- subset(dataset, sample == FALSE)
+
+```
+
+
+```{r}
+
+model1 <- lm(formula = Closing~Opening, data = train)
+
+print(summary(model1))
+
+```
+
+```{r}
+
+closing_predict <- predict(model1, data.frame(test))
+print(closing_predict)
+
+```
+```{r}
+print(test)
+```
+
+```{r}
+# Visualising the Training set results
+ggplot() + geom_point(aes(x = train$Opening,
+                y = train$Closing), colour = 'red') +
+geom_line(aes(x = train$Opening,
+y = predict(model1, newdata = train)), colour = 'blue') +
+         
+ggtitle('Opening vs Closing (Training set)') +
+xlab('Opening') +
+ylab('Closing')
+```
+
+```{r}
+# Visualising the Test set results
+  ggplot() +
+  geom_point(aes(x = test$Opening, y = test$Closing),
+             colour = 'red') +
+  geom_line(aes(x = test$Opening,
+             y = predict(model1, newdata = test)),
+             colour = 'blue') +
+  
+ggtitle('Opening vs Closing (Test set)') +
+xlab('Opening') +
+ylab('Closing')
+```
+
+```{r}
+print(summary(model1)$r.squared)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Dataset having prices comparision of 4 cities
+
+
+
+```{r}
+df <- read.csv("./dataset_cities.csv")
+
+print(df)
+```
+
+```{r}
+print(unique(df['Year']))
+```
+
+```{r}
+print(unique((df['Year'])))
+```
+
+```{r}
+
+case_2014 <- df[df$Year==2014L,]
+case_2015 <- df[df$Year==2015L,]
+case_2016 <- df[df$Year==2016L,]
+case_2017 <- df[df$Year==2017L,]
+case_2018 <- df[df$Year==2018L,]
+
+print(unique(case_2014["Month"]))
+print(unique(case_2015["Month"]))
+print(unique(case_2016["Month"]))
+print(unique(case_2017["Month"]))
+print(unique(case_2018["Month"]))
+```
+
+```{r}
+
+dataset_2017 <- df[df$Year==2017L,]
+print(dataset_2017)
+
+```
+```{r}
+
+filter_col_2017 = c()
+count = 0
+
+for (i in unique(dataset_2017$Month)) {
+  
+  count = 0
+  
+  for (j in dataset_2017$Month) {
+    
+    if( i == j){
+      count = count + 1
+    }
+    
+  }
+  
+  if(count >= 28){
+    filter_col_2017 = append(filter_col_2017,i)
+  }
+  
+}
+print(filter_col_2017)
+
+```
+
+```{r}
+
+dataset_2018 <- df[df$Year==2018L,]
+print(dataset_2018)
+
+```
+```{r}
+
+
+filter_col_2018 = c()
+count = 0
+
+
+for (i in unique(dataset_2018$Month)) {
+  
+  count = 0
+  
+  for (j in dataset_2018$Month) {
+    
+    if( i == j){
+      count = count + 1
+    }
+    
+  }
+  
+  if(count >= 28){
+    filter_col_2018 = append(filter_col_2018,i)
+  }
+  
+}
+print(filter_col_2018)
+
+```
+
+
+```{r}
+
+dataset2 <- rbind(dataset_2017,dataset_2018)
+head(dataset2)
+
+```
+
+
+
+```{r}
+
+print(paste("Size of dataframe : ", nrow(dataset2), "x", ncol(dataset2)))
+
+```
+
+
+```{r}
+print(summary(dataset2))
+```
+
+
+
+```{r}
+
+print(paste("Minimum value of Delhi : ",min(dataset2$Delhi)))
+print(paste("Maximum value of Delhi : ",max(dataset2$Delhi)))
+
+print(paste("Minimum value of Mumbai : ",min(dataset2$Mumbai)))
+print(paste("Maximum value of Mumbai : ",max(dataset2$Mumbai)))
+
+print(paste("Minimum value of Chennai : ",min(dataset2$Chennai)))
+print(paste("Maximum value of Chennai : ",max(dataset2$Chennai)))
+
+print(paste("Minimum value of Kolkata : ",min(dataset2$Kolkata)))
+print(paste("Maximum value of Kolkata : ",max(dataset2$Kolkata)))
+
+```
+
+
+
+```{r}
+
+# Averages of each city
+
+average_petrol_price = data.frame(
+  "cities" = c(
+    "Delhi",
+    "Kolkata",
+    "Chennai",
+    "Mumbai"
+  ),
+  
+  "averages" = c(
+    as.numeric(mean(dataset2$Delhi)),
+    as.numeric(mean(dataset2$Kolkata)),
+    as.numeric(mean(dataset2$Chennai)),
+    as.numeric(mean(dataset2$Mumbai))
+  )
+)
+
+
+print(average_petrol_price)
+
+
+```
+
+```{r}
+
+ggplot(data = average_petrol_price, aes(x=cities,y=averages,fill=averages)) + geom_col()
+
+```
+
+
+```{r}
+
+max_min_price = data.frame(
+  
+  "values" = c(
+    "Min",
+    "Max"
+  ),
+  
+  "Delhi" = c(
+    min(dataset2['Delhi']),
+    max(dataset2['Delhi'])
+  ),
+    
+  "Mumbai" = c(
+    min(dataset2['Mumbai']),
+    max(dataset2['Mumbai'])
+  ), 
+    
+  "Chennai" = c(
+    min(dataset2['Chennai']),
+    max(dataset2['Chennai'])
+  ),
+  
+  "Kolkata" = c(
+    min(dataset2['Kolkata']),
+    max(dataset2['Kolkata'])
+  )
+  
+)
+
+max_min_price
+```
+
+
+```{r}
+
+ggplot(data = max_min_price, aes(x=values,fill=Delhi)) +
+  geom_col( aes(y=Delhi) )
+
+ggplot(data = max_min_price, aes(x=values, fill= Mumbai)) +
+  geom_col( aes(y=Mumbai) )
+
+ggplot(data = max_min_price, aes(x=values, fill=Chennai)) +
+  geom_col( aes(y=Chennai) )
+
+ggplot(data = max_min_price, aes(x=values, fill=Kolkata)) +
+  geom_col( aes(y=Kolkata) )
+
+```
+
+
+```{r}
+
+# YEAR - 2017 - December
+
+case_2018 <- df[df$Year==2018L,]
+case_feb <- case_2018[case_2018$Month == 'February',]
+case_feb <- case_feb[order(case_feb[,'Day']),]
+print(head(case_feb))
+
+```
+
+
+```{r}
+
+ggplot(data = case_feb, aes(x=Day)) +
+  geom_line( aes(y=Mumbai), color="blue" ) +
+  geom_line( aes(y=Delhi), color="red" ) +
+  geom_line( aes(y=Chennai), color="yellow" ) +
+  geom_line( aes(y=Kolkata), color="violet" )
+
+```
+
+
+```{r}
+ggplot(data = case_feb, aes(x=Day)) +
+  geom_line( aes(y=Chennai), color="yellow" ) +
+  geom_line( aes(y=Kolkata), color="violet" )
+```
+
+
+```{r}
+
+case_feb['Average_price'] = (case_feb['Delhi'] + case_feb['Mumbai'] + case_feb['Kolkata'] + case_feb['Chennai'])/4
+
+```
+
+```{r}
+
+ggplot(data = case_feb, aes(x=Day)) +
+  geom_line( aes(y=Average_price), color="blue" ) + 
+  geom_point( aes(y=Average_price), color="red" ) +
+  labs(title = "Average Price Vs Days of December 2017",x="Days of December 2017", y="Average Price")
+
+
+```
+
+
+
